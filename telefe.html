@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telefe En Vivo</title>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: black;
+    overflow: hidden;
+}
+
+.player-wrapper {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* 🔥 RECORTE REAL SUPERIOR + INFERIOR */
+.player-frame {
+    position: absolute;
+    top: -170px;                /* corta header + nav */
+    left: 0;
+    width: 100%;
+    height: calc(100% + 170px); /* solo compensamos lo que subimos */
+    border: none;
+}
+
+/* Ajuste horizontal */
+@media (orientation: landscape) {
+    .player-frame {
+        top: -160px;
+        height: calc(100% + 160px);
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="player-wrapper">
+    <iframe
+        class="player-frame"
+        src="https://mitelefe.com/vivo"
+        allow="autoplay; fullscreen"
+        allowfullscreen>
+    </iframe>
+</div>
+
+</body>
+</html>
