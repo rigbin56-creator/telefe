@@ -1,8 +1,7 @@
 body {
   margin: 0;
-  background: #0f172a;
   font-family: Arial, sans-serif;
-  overflow: hidden;
+  background: #0f172a;
   color: white;
 }
 
@@ -12,12 +11,11 @@ body {
 }
 
 .sidebar {
-  width: 320px;
+  width: 350px;
   background: #111827;
   overflow-y: auto;
   padding: 20px;
   box-sizing: border-box;
-  border-right: 2px solid #1f2937;
 }
 
 .logo {
@@ -27,60 +25,91 @@ body {
   text-align: center;
 }
 
-.channel-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .channel-btn {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
   background: #1f2937;
   border: none;
   color: white;
-  padding: 14px;
-  font-size: 15px;
-  text-align: left;
-  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  border-radius: 10px;
+  transition: 0.2s;
+  font-size: 16px;
 }
 
 .channel-btn:hover,
 .channel-btn:focus {
-  background: #2563eb;
   outline: none;
+  background: #2563eb;
   transform: scale(1.03);
+}
+
+.channel-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  background: white;
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.channel-name {
+  flex: 1;
+  text-align: left;
+}
+
+.favorite-icon {
+  position: absolute;
+  right: 15px;
+  font-size: 20px;
+  opacity: 0;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.channel-btn:hover .favorite-icon,
+.channel-btn:focus .favorite-icon {
+  opacity: 0.6;
+}
+
+.favorite-icon.active {
+  opacity: 1 !important;
+  color: red;
 }
 
 .player-container {
   flex: 1;
   display: flex;
-  justify-content: center;
   align-items: center;
-  background: #0b1220;
+  justify-content: center;
+  background: black;
 }
 
 .player-wrapper {
   width: 90%;
   height: 90%;
   position: relative;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 0 40px rgba(0,0,0,0.6);
 }
 
 video {
   width: 100%;
   height: 100%;
   background: black;
+  border-radius: 12px;
 }
 
-.status {
+.loading {
   position: absolute;
-  bottom: 20px;
-  left: 20px;
-  background: rgba(0,0,0,0.6);
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 14px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #2563eb;
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: none;
 }
