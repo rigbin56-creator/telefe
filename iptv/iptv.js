@@ -1,37 +1,25 @@
-document.addEventListener("DOMContentLoaded", () => {
+const channelList = document.getElementById("channelList");
+const video = document.getElementById("videoPlayer");
+const statusMessage = document.getElementById("statusMessage");
 
-  const channelList = document.getElementById("channelList");
-  const videoPlayer = document.getElementById("videoPlayer");
-  const statusMessage = document.getElementById("statusMessage");
+let hls;
+let channels = [];
+let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 
-  let hls;
-  let channels = [];
-  let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-
-  if (!channelList || !videoPlayer || !statusMessage) {
-    console.error("Faltan elementos HTML.");
-    return;
+async function loadM3U() {
+  try {
+    const response = await fetch("ar.m3u");
+    const text = await response.text();
+    parseM3U(text);
+  } catch (error) {
+    statusMessage.textContent = "Error cargando lista M3U";
+    console.error(error);
   }
+}
 
-  // ----------------------------
-  // CARGAR ARCHIVO M3U LOCAL
-  // ----------------------------
-  fetch("ar.m3u")
-    .then(res => res.text())
-    .then(data => {
-      parseM3U(data);
-      renderChannels();
-    })
-    .catch(err => {
-      console.error("Error cargando ar.m3u:", err);
-      statusMessage.innerText = "Error cargando lista IPTV";
-    });
-
-  // ----------------------------
-  // PARSER M3U REAL
-  // ----------------------------
-  function parseM3U(data) {
+function parseM3U(data) {
   const lines = data.split("\n");
+  channels = [];
 
   for (let i = 0; i < lines.length; i++) {
 
@@ -40,137 +28,110 @@ document.addEventListener("DOMContentLoaded", () => {
       const infoLine = lines[i];
       const url = lines[i + 1]?.trim();
 
-      if (!url || url.startsWith("#")) continue;
+      if (!url || !url.startsWith("http")) continue;
 
-      // Extraer nombre desde tvg-name
-      let nameMatch = infoLine.match(/tvg-name="([^"]+)"/);
-
-      // Si no tiene tvg-name, usar texto después de la coma
-      if (!nameMatch) {
-        nameMatch = infoLine.match(/,(.+)$/);
-      }
+      const parts = infoLine.split(",");
+      let name = parts.length > 1 ? parts[1].trim() : "Canal";
 
       const logoMatch = infoLine.match(/tvg-logo="([^"]+)"/);
-
-      const name = nameMatch ? nameMatch[1].trim() : "Canal desconocido";
       const logo = logoMatch ? logoMatch[1] : "";
 
       channels.push({ name, url, logo });
     }
   }
+
+  renderChannels();
 }
 
+function renderChannels() {
 
-  // ----------------------------
-  // RENDERIZAR LISTA
-  // ----------------------------
-  function renderChannels() {
+  channelList.innerHTML = "";
 
-    channelList.innerHTML = "";
+  const sorted = [...channels].sort((a, b) => {
+    return favorites.includes(b.name) - favorites.includes(a.name);
+  });
 
-    const sorted = [...channels].sort((a, b) => {
-      return favorites.includes(b.name) - favorites.includes(a.name);
+  sorted.forEach(channel => {
+
+    const button = document.createElement("button");
+    button.className = "channel-btn";
+    button.tabIndex = 0;
+
+    const logo = document.createElement("img");
+    logo.className = "channel-logo";
+    logo.src = channel.logo || "";
+    logo.onerror = () => logo.style.display = "none";
+
+    const name = document.createElement("span");
+    name.className = "channel-name";
+    name.textContent = channel.name;
+
+    const heart = document.createElement("span");
+    heart.className = "favorite-icon";
+    heart.textContent = "❤️";
+
+    if (favorites.includes(channel.name)) {
+      heart.classList.add("active");
+    }
+
+    button.addEventListener("click", () => {
+      playChannel(channel.url, channel.name);
     });
 
-    sorted.forEach(channel => {
-
-      const item = document.createElement("div");
-      item.className = "channel-item";
-      item.tabIndex = 0;
-
-      const logo = document.createElement("img");
-      logo.src = channel.logo || "";
-      logo.className = "channel-logo";
-      logo.onerror = () => logo.style.display = "none";
-
-      const name = document.createElement("span");
-      name.textContent = channel.name;
-      name.className = "channel-name";
-
-      const fav = document.createElement("span");
-      fav.innerText = "❤️";
-      fav.className = "favorite-btn";
+    heart.addEventListener("click", (e) => {
+      e.stopPropagation();
 
       if (favorites.includes(channel.name)) {
-        fav.classList.add("favorite-active");
+        favorites = favorites.filter(f => f !== channel.name);
+      } else {
+        favorites.push(channel.name);
       }
 
-      // CLICK CANAL
-      item.addEventListener("click", () => {
-        playChannel(channel.url, channel.name);
-      });
-
-      // FAVORITO
-      fav.addEventListener("click", (e) => {
-        e.stopPropagation();
-
-        if (favorites.includes(channel.name)) {
-          favorites = favorites.filter(f => f !== channel.name);
-        } else {
-          favorites.push(channel.name);
-        }
-
-        localStorage.setItem("favorites", JSON.stringify(favorites));
-        renderChannels();
-      });
-
-      item.appendChild(logo);
-      item.appendChild(name);
-      item.appendChild(fav);
-
-      channelList.appendChild(item);
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+      renderChannels();
     });
+
+    button.appendChild(logo);
+    button.appendChild(name);
+    button.appendChild(heart);
+
+    channelList.appendChild(button);
+  });
+}
+
+function playChannel(url, name) {
+
+  statusMessage.textContent = "Cargando " + name + "...";
+
+  if (hls) {
+    hls.destroy();
   }
 
-  // ----------------------------
-  // REPRODUCIR CANAL
-  // ----------------------------
-  function playChannel(url, name) {
+  if (Hls.isSupported()) {
+    hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(video);
 
-    statusMessage.style.display = "block";
-    statusMessage.innerText = "Cargando: " + name;
+    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+      video.play();
+      statusMessage.textContent = name;
+    });
 
-    if (hls) {
-      hls.destroy();
-    }
+    hls.on(Hls.Events.ERROR, function () {
+      statusMessage.textContent = "Error cargando canal";
+    });
 
-    videoPlayer.pause();
-    videoPlayer.removeAttribute("src");
-    videoPlayer.load();
+  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
 
-    if (videoPlayer.canPlayType("application/vnd.apple.mpegurl")) {
+    video.src = url;
+    video.addEventListener("loadedmetadata", function () {
+      video.play();
+      statusMessage.textContent = name;
+    });
 
-      videoPlayer.src = url;
-      videoPlayer.play();
-
-    } else if (Hls.isSupported()) {
-
-      hls = new Hls({
-        maxBufferLength: 30
-      });
-
-      hls.loadSource(url);
-      hls.attachMedia(videoPlayer);
-
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        videoPlayer.play();
-      });
-
-      hls.on(Hls.Events.ERROR, function () {
-        statusMessage.innerText = "Error cargando canal";
-      });
-
-    } else {
-      statusMessage.innerText = "HLS no soportado";
-    }
-
-    videoPlayer.onplaying = () => {
-      statusMessage.style.display = "none";
-    };
-
-    videoPlayer.onerror = () => {
-      statusMessage.innerText = "No se pudo reproducir el canal";
-    };
+  } else {
+    statusMessage.textContent = "HLS no soportado";
   }
+}
 
-});
+loadM3U();
