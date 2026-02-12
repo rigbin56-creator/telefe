@@ -1,123 +1,106 @@
 const channelList = document.getElementById("channelList");
-const video = document.getElementById("videoPlayer");
-const loading = document.getElementById("loading");
+const videoPlayer = document.getElementById("videoPlayer");
+const statusMessage = document.getElementById("statusMessage");
 
 let hls;
-let channels = [];
+
+// 🔹 Lista de canales (ejemplo)
+const channels = [
+  {
+    name: "Canal 13",
+    url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_Canal_13_Argentina.png"
+  },
+  {
+    name: "Telefe",
+    url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/5/5a/Telefe_logo_2018.png"
+  }
+];
+
+// 🔹 Favoritos guardados
 let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 
-async function loadChannels() {
-  try {
-    const response = await fetch("ar.m3u");
-    const text = await response.text();
-    parseM3U(text);
-    renderChannels();
-  } catch (error) {
-    channelList.innerHTML = "<p>Error cargando lista</p>";
-  }
+function saveFavorites() {
+  localStorage.setItem("favorites", JSON.stringify(favorites));
 }
 
-function parseM3U(data) {
-  const lines = data.split("\n");
-
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith("#EXTINF")) {
-      const name = lines[i].split(",")[1]?.trim();
-      const logoMatch = lines[i].match(/tvg-logo="(.*?)"/);
-      const logo = logoMatch ? logoMatch[1] : null;
-      const url = lines[i + 1]?.trim();
-
-      if (url && name) {
-        channels.push({ name, url, logo });
-      }
-    }
-  }
-}
-
+// 🔹 Renderizar lista
 function renderChannels() {
   channelList.innerHTML = "";
 
-  const favChannels = channels.filter(c => favorites.includes(c.url));
-  const normalChannels = channels.filter(c => !favorites.includes(c.url));
+  // Ordenar favoritos arriba
+  const sorted = [...channels].sort((a, b) => {
+    return favorites.includes(b.name) - favorites.includes(a.name);
+  });
 
-  const ordered = [...favChannels, ...normalChannels];
-
-  ordered.forEach(channel => {
-    const button = document.createElement("button");
-    button.className = "channel-btn";
-    button.tabIndex = 0;
+  sorted.forEach(channel => {
+    const item = document.createElement("div");
+    item.className = "channel-item";
+    item.tabIndex = 0;
 
     const logo = document.createElement("img");
+    logo.src = channel.logo;
     logo.className = "channel-logo";
-    logo.src = channel.logo || "";
-    logo.onerror = () => logo.style.display = "none";
 
     const name = document.createElement("span");
-    name.className = "channel-name";
     name.textContent = channel.name;
+    name.className = "channel-name";
 
-    const heart = document.createElement("span");
-    heart.className = "favorite-icon";
-    heart.innerHTML = "❤";
+    const fav = document.createElement("span");
+    fav.textContent = "❤️";
+    fav.className = "favorite-btn";
 
-    if (favorites.includes(channel.url)) {
-      heart.classList.add("active");
+    if (favorites.includes(channel.name)) {
+      fav.classList.add("favorite-active");
     }
 
-    heart.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleFavorite(channel.url);
-    });
-
-    button.appendChild(logo);
-    button.appendChild(name);
-    button.appendChild(heart);
-
-    button.addEventListener("click", () => {
+    // 🔹 Click canal
+    item.addEventListener("click", () => {
       playChannel(channel.url);
     });
 
-    channelList.appendChild(button);
+    // 🔹 Click favorito
+    fav.addEventListener("click", (e) => {
+      e.stopPropagation();
+
+      if (favorites.includes(channel.name)) {
+        favorites = favorites.filter(f => f !== channel.name);
+      } else {
+        favorites.push(channel.name);
+      }
+
+      saveFavorites();
+      renderChannels();
+    });
+
+    item.appendChild(logo);
+    item.appendChild(name);
+    item.appendChild(fav);
+
+    channelList.appendChild(item);
   });
 }
 
-function toggleFavorite(url) {
-  if (favorites.includes(url)) {
-    favorites = favorites.filter(f => f !== url);
-  } else {
-    favorites.push(url);
-  }
-
-  localStorage.setItem("favorites", JSON.stringify(favorites));
-  renderChannels();
-}
-
+// 🔹 Reproducir canal
 function playChannel(url) {
-  loading.style.display = "block";
+
+  statusMessage.style.display = "none";
 
   if (hls) {
     hls.destroy();
   }
 
-  if (Hls.isSupported()) {
+  if (videoPlayer.canPlayType("application/vnd.apple.mpegurl")) {
+    videoPlayer.src = url;
+  } else if (Hls.isSupported()) {
     hls = new Hls();
     hls.loadSource(url);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      loading.style.display = "none";
-      video.play();
-    });
-    hls.on(Hls.Events.ERROR, () => {
-      loading.style.display = "none";
-      alert("Error cargando canal");
-    });
-  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-    video.src = url;
-    video.addEventListener("loadedmetadata", () => {
-      loading.style.display = "none";
-      video.play();
-    });
+    hls.attachMedia(videoPlayer);
+  } else {
+    alert("Tu navegador no soporta HLS");
   }
 }
 
-loadChannels();
+// Inicializar
+renderChannels();
