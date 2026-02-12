@@ -1,25 +1,82 @@
-const playlistURL = "https://iptv-org.github.io/iptv/countries/ar.m3u";
+const masterURL = "https://iptv-org.github.io/iptv/index.country.m3u";
 
+const countryList = document.getElementById("countryList");
 const channelList = document.getElementById("channelList");
 const video = document.getElementById("videoPlayer");
 const loading = document.getElementById("loading");
 
 let hls;
+let countries = [];
 let channels = [];
 
-async function loadPlaylist() {
+/* =========================
+   CARGAR LISTA DE PAÍSES
+========================= */
+
+async function loadCountries() {
   try {
-    const response = await fetch(playlistURL);
+    const response = await fetch(masterURL);
     const text = await response.text();
-    parseM3U(text);
-    renderChannels();
+    parseCountryM3U(text);
+    renderCountries();
   } catch (error) {
-    channelList.innerHTML = "<p>Error cargando lista.</p>";
-    console.error(error);
+    console.error("Error cargando países:", error);
   }
 }
 
-function parseM3U(data) {
+function parseCountryM3U(data) {
+  const lines = data.split("\n");
+
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].startsWith("#EXTINF")) {
+
+      const nameMatch = lines[i].match(/,(.*)$/);
+      const url = lines[i + 1];
+
+      if (!url || !url.startsWith("http")) continue;
+
+      countries.push({
+        name: nameMatch ? nameMatch[1].trim() : "País",
+        url: url.trim()
+      });
+    }
+  }
+}
+
+function renderCountries() {
+  countryList.innerHTML = "";
+
+  countries.forEach((country, index) => {
+    const button = document.createElement("button");
+    button.className = "country-btn";
+    button.textContent = country.name;
+    button.onclick = () => loadChannels(country.url);
+    countryList.appendChild(button);
+  });
+}
+
+/* =========================
+   CARGAR CANALES DEL PAÍS
+========================= */
+
+async function loadChannels(url) {
+  loading.style.display = "block";
+  channelList.innerHTML = "";
+  channels = [];
+
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+    parseChannelM3U(text);
+    renderChannels();
+  } catch (error) {
+    console.error("Error cargando canales:", error);
+  }
+
+  loading.style.display = "none";
+}
+
+function parseChannelM3U(data) {
   const lines = data.split("\n");
 
   for (let i = 0; i < lines.length; i++) {
@@ -39,11 +96,6 @@ function parseM3U(data) {
 }
 
 function renderChannels() {
-  if (channels.length === 0) {
-    channelList.innerHTML = "<p>No se encontraron canales.</p>";
-    return;
-  }
-
   channelList.innerHTML = "";
 
   channels.forEach((channel, index) => {
@@ -53,8 +105,6 @@ function renderChannels() {
     button.onclick = () => selectChannel(index);
     channelList.appendChild(button);
   });
-
-  selectChannel(0);
 }
 
 function selectChannel(index) {
@@ -68,9 +118,11 @@ function selectChannel(index) {
   playChannel(channels[index].url);
 }
 
-function playChannel(url) {
-  loading.style.display = "block";
+/* =========================
+   REPRODUCTOR HLS
+========================= */
 
+function playChannel(url) {
   if (hls) {
     hls.destroy();
   }
@@ -80,16 +132,14 @@ function playChannel(url) {
     hls.loadSource(url);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      loading.style.display = "none";
       video.play();
     });
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
     video.src = url;
-    video.addEventListener("loadedmetadata", () => {
-      loading.style.display = "none";
-      video.play();
-    });
+    video.play();
   }
 }
 
-loadPlaylist();
+/* ========================= */
+
+loadCountries();
