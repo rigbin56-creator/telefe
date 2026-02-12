@@ -1,48 +1,97 @@
-const playlistUrl = "https://iptv-org.github.io/iptv/index.country.m3u";
-const channelContainer = document.getElementById("channels");
+const playlistURL = "https://iptv-org.github.io/iptv/index.country.m3u";
+const channelList = document.getElementById("channelList");
 const video = document.getElementById("videoPlayer");
+const loading = document.getElementById("loading");
 
-async function loadChannels() {
-  const response = await fetch(playlistUrl);
-  const text = await response.text();
+let hls;
+let channels = [];
 
-  const lines = text.split("\n");
+async function loadPlaylist() {
+  try {
+    const response = await fetch(playlistURL);
+    const text = await response.text();
+    parseM3U(text);
+    renderChannels();
+  } catch (error) {
+    channelList.innerHTML = "<p>Error cargando lista.</p>";
+    console.error(error);
+  }
+}
 
-  let channels = [];
+function parseM3U(data) {
+  const lines = data.split("\n");
 
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].includes('tvg-country="AR"')) {
-      const nameMatch = lines[i].match(/,(.*)$/);
+    if (lines[i].startsWith("#EXTINF")) {
+
+      const extinf = lines[i];
       const url = lines[i + 1];
 
-      if (nameMatch && url && url.startsWith("http")) {
-        channels.push({
-          name: nameMatch[1].trim(),
-          url: url.trim()
-        });
-      }
+      if (!url || !url.startsWith("http")) continue;
+
+      const countryMatch = extinf.match(/tvg-country="([^"]+)"/);
+      const nameMatch = extinf.match(/,(.*)$/);
+
+      if (!countryMatch || countryMatch[1] !== "AR") continue;
+
+      channels.push({
+        name: nameMatch ? nameMatch[1].trim() : "Sin nombre",
+        url: url.trim()
+      });
     }
   }
+}
 
-  channels.forEach(channel => {
-    const btn = document.createElement("button");
-    btn.className = "channel-btn";
-    btn.textContent = channel.name;
+function renderChannels() {
+  if (channels.length === 0) {
+    channelList.innerHTML = "<p>No se encontraron canales AR.</p>";
+    return;
+  }
 
-    btn.onclick = () => playChannel(channel.url);
-
-    channelContainer.appendChild(btn);
+  channels.forEach((channel, index) => {
+    const button = document.createElement("button");
+    button.className = "channel-btn";
+    button.textContent = channel.name;
+    button.onclick = () => selectChannel(index);
+    channelList.appendChild(button);
   });
+
+  selectChannel(0);
+}
+
+function selectChannel(index) {
+  document.querySelectorAll(".channel-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  const selectedBtn = document.querySelectorAll(".channel-btn")[index];
+  selectedBtn.classList.add("active");
+
+  playChannel(channels[index].url);
 }
 
 function playChannel(url) {
+  loading.style.display = "block";
+
+  if (hls) {
+    hls.destroy();
+  }
+
   if (Hls.isSupported()) {
-    const hls = new Hls();
+    hls = new Hls();
     hls.loadSource(url);
     hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      loading.style.display = "none";
+      video.play();
+    });
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
     video.src = url;
+    video.addEventListener("loadedmetadata", () => {
+      loading.style.display = "none";
+      video.play();
+    });
   }
 }
 
-loadChannels();
+loadPlaylist();

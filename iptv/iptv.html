@@ -10,15 +10,18 @@
 
 <body>
 
-<div class="app">
+<div class="layout">
 
-  <aside class="channel-list" id="channelList">
-    <h2>🇦🇷 Argentina</h2>
-    <div id="channels"></div>
+  <aside class="sidebar">
+    <div class="logo">📺 IPTV ARG</div>
+    <div id="channelList" class="channel-list"></div>
   </aside>
 
-  <main class="player-area">
-    <video id="videoPlayer" controls autoplay></video>
+  <main class="player-container">
+    <div class="player-wrapper" id="playerWrapper">
+      <video id="videoPlayer" controls></video>
+      <div id="loading" class="loading">Cargando canal...</div>
+    </div>
   </main>
 
 </div>
