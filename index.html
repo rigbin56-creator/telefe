@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TV Panel</title>
+<title>TV Panel Pro</title>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -16,31 +16,19 @@
 
         <div class="menu-section">Canales</div>
 
-        <button class="menu-btn" onclick="loadPage('https://www.livehdtv.com/el-trece/')">
-            📺 El Trece
-        </button>
-
-        <button class="menu-btn" onclick="loadPage('https://mitelefe.com/telefe-en-vivo')">
-            🔵 Telefe
-        </button>
-
-        <button class="menu-btn" onclick="loadPage('https://www.americatv.com.ar/vivo')">
-            🔴 América
-        </button>
-
-        <button class="menu-btn" onclick="loadPage('https://tn.com.ar/envivo/24hs/')">
-            📰 TN 24hs
-        </button>
+        <button class="menu-btn" onclick="loadPage('https://www.livehdtv.com/el-trece/')">📺 El Trece</button>
+        <button class="menu-btn" onclick="loadPage('https://mitelefe.com/telefe-en-vivo')">🔵 Telefe</button>
+        <button class="menu-btn" onclick="loadPage('https://www.americatv.com.ar/vivo')">🔴 América</button>
+        <button class="menu-btn" onclick="loadPage('https://tn.com.ar/envivo/24hs/')">📰 TN 24hs</button>
 
         <div class="menu-section">YouTube</div>
 
-        <button class="menu-btn" onclick="loadYT('XhAYcYpPzTc')">
-            ▶ Noticias 1
-        </button>
+        <button class="menu-btn" onclick="loadYT('XhAYcYpPzTc')">▶ Noticias 1</button>
+        <button class="menu-btn" onclick="loadYT('cb12KmMMDJA')">▶ Noticias 2</button>
 
-        <button class="menu-btn" onclick="loadYT('cb12KmMMDJA')">
-            ▶ Noticias 2
-        </button>
+        <div class="menu-section">Streaming</div>
+
+        <button class="menu-btn" onclick="loadPage('https://pluto.tv/latam/live-tv/63eb9255c111bc0008fe6ec4')">🟣 Pluto TV</button>
 
     </div>
 
@@ -52,7 +40,7 @@
             <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Pantalla Completa</button>
         </div>
 
-        <div class="player-wrapper" id="playerWrapper">
+        <div class="player-wrapper" id="playerWrapper" tabindex="0">
             <iframe id="player" src="" allowfullscreen></iframe>
         </div>
 
