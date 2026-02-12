@@ -3,60 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TV Online</title>
+<title>TV Panel</title>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-<div class="app">
+<div class="layout">
 
-    <div class="nav">
-        <button onclick="showSection('canales')">Canales en Vivo</button>
-        <button onclick="showSection('yt')">YT Embed</button>
+    <!-- SIDEBAR -->
+    <div id="sidebar" class="sidebar open">
+        <div class="logo">TV Panel</div>
+
+        <div class="menu-section">Canales</div>
+
+        <button class="menu-btn" onclick="loadPage('https://www.livehdtv.com/el-trece/')">
+            📺 El Trece
+        </button>
+
+        <button class="menu-btn" onclick="loadPage('https://mitelefe.com/telefe-en-vivo')">
+            🔵 Telefe
+        </button>
+
+        <button class="menu-btn" onclick="loadPage('https://www.americatv.com.ar/vivo')">
+            🔴 América
+        </button>
+
+        <button class="menu-btn" onclick="loadPage('https://tn.com.ar/envivo/24hs/')">
+            📰 TN 24hs
+        </button>
+
+        <div class="menu-section">YouTube</div>
+
+        <button class="menu-btn" onclick="loadYT('XhAYcYpPzTc')">
+            ▶ Noticias 1
+        </button>
+
+        <button class="menu-btn" onclick="loadYT('cb12KmMMDJA')">
+            ▶ Noticias 2
+        </button>
+
     </div>
 
-    <div id="canales" class="section active">
+    <!-- CONTENIDO -->
+    <div class="content">
 
-        <div class="grid">
-
-            <div class="card" onclick="loadEmbed('https://www.livehdtv.com/embed/el-trece/')">
-                El Trece
-            </div>
-
-            <div class="card" onclick="loadEmbed('https://mitelefe.com/telefe-en-vivo')">
-                Telefe
-            </div>
-
-            <div class="card" onclick="loadEmbed('https://www.americatv.com.ar/vivo')">
-                América TV
-            </div>
-
-            <div class="card" onclick="loadEmbed('https://tn.com.ar/envivo/24hs/')">
-                TN 24hs
-            </div>
-
+        <div class="topbar">
+            <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Pantalla Completa</button>
         </div>
 
-    </div>
-
-    <div id="yt" class="section">
-
-        <div class="grid">
-
-            <div class="card" onclick="loadYT('XhAYcYpPzTc')">
-                YT Noticias 1
-            </div>
-
-            <div class="card" onclick="loadYT('cb12KmMMDJA')">
-                YT Noticias 2
-            </div>
-
+        <div class="player-wrapper" id="playerWrapper">
+            <iframe id="player" src="" allowfullscreen></iframe>
         </div>
 
-    </div>
-
-    <div class="player-container">
-        <iframe id="player" src="" frameborder="0" allowfullscreen></iframe>
     </div>
 
 </div>
