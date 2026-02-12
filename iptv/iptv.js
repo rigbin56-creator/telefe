@@ -31,26 +31,35 @@ document.addEventListener("DOMContentLoaded", () => {
   // PARSER M3U REAL
   // ----------------------------
   function parseM3U(data) {
-    const lines = data.split("\n");
+  const lines = data.split("\n");
 
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].startsWith("#EXTINF")) {
+  for (let i = 0; i < lines.length; i++) {
 
-        const infoLine = lines[i];
-        const url = lines[i + 1]?.trim();
+    if (lines[i].startsWith("#EXTINF")) {
 
-        if (!url || url.startsWith("#")) continue;
+      const infoLine = lines[i];
+      const url = lines[i + 1]?.trim();
 
-        const nameMatch = infoLine.match(/,(.+)$/);
-        const logoMatch = infoLine.match(/tvg-logo="([^"]+)"/);
+      if (!url || url.startsWith("#")) continue;
 
-        const name = nameMatch ? nameMatch[1].trim() : "Canal";
-        const logo = logoMatch ? logoMatch[1] : "";
+      // Extraer nombre desde tvg-name
+      let nameMatch = infoLine.match(/tvg-name="([^"]+)"/);
 
-        channels.push({ name, url, logo });
+      // Si no tiene tvg-name, usar texto después de la coma
+      if (!nameMatch) {
+        nameMatch = infoLine.match(/,(.+)$/);
       }
+
+      const logoMatch = infoLine.match(/tvg-logo="([^"]+)"/);
+
+      const name = nameMatch ? nameMatch[1].trim() : "Canal desconocido";
+      const logo = logoMatch ? logoMatch[1] : "";
+
+      channels.push({ name, url, logo });
     }
   }
+}
+
 
   // ----------------------------
   // RENDERIZAR LISTA

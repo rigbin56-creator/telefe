@@ -113,3 +113,19 @@ video {
   border-radius: 8px;
   display: none;
 }
+
+.favorite-btn {
+  opacity: 0;
+  margin-left: auto;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.channel-item:hover .favorite-btn,
+.channel-item:focus .favorite-btn {
+  opacity: 1;
+}
+
+.favorite-active {
+  opacity: 1 !important;
+}
