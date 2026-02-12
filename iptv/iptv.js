@@ -1,128 +1,52 @@
-const masterURL = "https://iptv-org.github.io/iptv/index.country.m3u";
-
-const countryList = document.getElementById("countryList");
 const channelList = document.getElementById("channelList");
 const video = document.getElementById("videoPlayer");
-const loading = document.getElementById("loading");
+const statusMessage = document.getElementById("statusMessage");
 
 let hls;
-let countries = [];
-let channels = [];
 
-/* =========================
-   CARGAR LISTA DE PAÍSES
-========================= */
-
-async function loadCountries() {
+async function loadM3U() {
   try {
-    const response = await fetch(masterURL);
+    const response = await fetch("ar.m3u");
     const text = await response.text();
-    parseCountryM3U(text);
-    renderCountries();
+    parseM3U(text);
   } catch (error) {
-    console.error("Error cargando países:", error);
+    statusMessage.textContent = "Error cargando lista M3U";
   }
 }
 
-function parseCountryM3U(data) {
+function parseM3U(data) {
   const lines = data.split("\n");
+  let channels = [];
 
   for (let i = 0; i < lines.length; i++) {
     if (lines[i].startsWith("#EXTINF")) {
-
-      const nameMatch = lines[i].match(/,(.*)$/);
+      const name = lines[i].split(",")[1];
       const url = lines[i + 1];
 
-      if (!url || !url.startsWith("http")) continue;
-
-      countries.push({
-        name: nameMatch ? nameMatch[1].trim() : "País",
-        url: url.trim()
-      });
+      if (url && url.startsWith("http")) {
+        channels.push({ name, url });
+      }
     }
   }
+
+  renderChannels(channels);
 }
 
-function renderCountries() {
-  countryList.innerHTML = "";
-
-  countries.forEach((country, index) => {
-    const button = document.createElement("button");
-    button.className = "country-btn";
-    button.textContent = country.name;
-    button.onclick = () => loadChannels(country.url);
-    countryList.appendChild(button);
-  });
-}
-
-/* =========================
-   CARGAR CANALES DEL PAÍS
-========================= */
-
-async function loadChannels(url) {
-  loading.style.display = "block";
-  channelList.innerHTML = "";
-  channels = [];
-
-  try {
-    const response = await fetch(url);
-    const text = await response.text();
-    parseChannelM3U(text);
-    renderChannels();
-  } catch (error) {
-    console.error("Error cargando canales:", error);
-  }
-
-  loading.style.display = "none";
-}
-
-function parseChannelM3U(data) {
-  const lines = data.split("\n");
-
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith("#EXTINF")) {
-
-      const nameMatch = lines[i].match(/,(.*)$/);
-      const url = lines[i + 1];
-
-      if (!url || !url.startsWith("http")) continue;
-
-      channels.push({
-        name: nameMatch ? nameMatch[1].trim() : "Canal",
-        url: url.trim()
-      });
-    }
-  }
-}
-
-function renderChannels() {
+function renderChannels(channels) {
   channelList.innerHTML = "";
 
-  channels.forEach((channel, index) => {
+  channels.forEach(channel => {
     const button = document.createElement("button");
     button.className = "channel-btn";
     button.textContent = channel.name;
-    button.onclick = () => selectChannel(index);
+    button.onclick = () => playChannel(channel.url, channel.name);
     channelList.appendChild(button);
   });
 }
 
-function selectChannel(index) {
-  document.querySelectorAll(".channel-btn").forEach(btn => {
-    btn.classList.remove("active");
-  });
+function playChannel(url, name) {
+  statusMessage.textContent = "Cargando " + name + "...";
 
-  const selectedBtn = document.querySelectorAll(".channel-btn")[index];
-  selectedBtn.classList.add("active");
-
-  playChannel(channels[index].url);
-}
-
-/* =========================
-   REPRODUCTOR HLS
-========================= */
-
-function playChannel(url) {
   if (hls) {
     hls.destroy();
   }
@@ -131,15 +55,25 @@ function playChannel(url) {
     hls = new Hls();
     hls.loadSource(url);
     hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+
+    hls.on(Hls.Events.MANIFEST_PARSED, function() {
       video.play();
+      statusMessage.textContent = name;
     });
+
+    hls.on(Hls.Events.ERROR, function() {
+      statusMessage.textContent = "Error cargando canal";
+    });
+
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
     video.src = url;
-    video.play();
+    video.addEventListener("loadedmetadata", function() {
+      video.play();
+      statusMessage.textContent = name;
+    });
+  } else {
+    statusMessage.textContent = "HLS no soportado";
   }
 }
 
-/* ========================= */
-
-loadCountries();
+loadM3U();

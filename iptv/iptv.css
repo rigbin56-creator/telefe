@@ -1,14 +1,9 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
-
 body {
-  background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
-  color: white;
+  margin: 0;
+  background: #0f172a;
+  font-family: Arial, sans-serif;
   overflow: hidden;
+  color: white;
 }
 
 .layout {
@@ -17,50 +12,44 @@ body {
 }
 
 .sidebar {
-  width: 340px;
-  background: #141414;
-  padding: 25px;
-  display: flex;
-  flex-direction: column;
-  border-right: 2px solid #222;
+  width: 320px;
+  background: #111827;
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
+  border-right: 2px solid #1f2937;
 }
 
 .logo {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
-  color: #00c3ff;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .channel-list {
-  flex: 1;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .channel-btn {
-  width: 100%;
-  padding: 14px;
-  margin-bottom: 10px;
-  background: #1f1f1f;
+  background: #1f2937;
   border: none;
-  border-radius: 12px;
   color: white;
-  text-align: left;
+  padding: 14px;
   font-size: 15px;
+  text-align: left;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .channel-btn:hover,
 .channel-btn:focus {
-  background: #007bff;
-  outline: 3px solid #00e0ff;
+  background: #2563eb;
+  outline: none;
   transform: scale(1.03);
-}
-
-.channel-btn.active {
-  background: #00c3ff;
-  color: black;
 }
 
 .player-container {
@@ -68,15 +57,16 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  background: #0b1220;
 }
 
 .player-wrapper {
-  width: 95%;
+  width: 90%;
   height: 90%;
   position: relative;
-  border-radius: 18px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 0 40px rgba(0, 195, 255, 0.2);
+  box-shadow: 0 0 40px rgba(0,0,0,0.6);
 }
 
 video {
@@ -85,11 +75,12 @@ video {
   background: black;
 }
 
-.loading {
+.status {
   position: absolute;
-  bottom: 15px;
-  right: 20px;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0,0,0,0.6);
+  padding: 8px 14px;
+  border-radius: 6px;
   font-size: 14px;
-  color: #00e0ff;
-  display: none;
 }

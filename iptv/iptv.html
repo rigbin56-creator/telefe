@@ -3,13 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IPTV Global</title>
-
+<title>IPTV Argentina</title>
 <link rel="stylesheet" href="iptv.css">
-
-<!-- HLS Player -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
 </head>
 
 <body>
@@ -17,34 +13,19 @@
 <div class="layout">
 
   <aside class="sidebar">
-
-    <div class="logo">📺 IPTV GLOBAL</div>
-
-    <!-- LISTA DE PAISES -->
-    <div class="section-title">🌍 Países</div>
-    <div id="countryList" class="country-list"></div>
-
-    <!-- LISTA DE CANALES -->
-    <div class="section-title">📡 Canales</div>
+    <div class="logo">📺 ARG IPTV</div>
     <div id="channelList" class="channel-list"></div>
-
   </aside>
 
   <main class="player-container">
-    <div class="player-wrapper" id="playerWrapper">
-
-      <video id="videoPlayer" controls autoplay></video>
-
-      <div id="loading" class="loading">
-        Cargando contenido...
-      </div>
-
+    <div class="player-wrapper">
+      <video id="videoPlayer" controls></video>
+      <div id="statusMessage" class="status">Seleccioná un canal</div>
     </div>
   </main>
 
 </div>
 
 <script src="iptv.js"></script>
-
 </body>
 </html>
