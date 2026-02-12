@@ -1,4 +1,5 @@
-const playlistURL = "https://iptv-org.github.io/iptv/index.country.m3u";
+const playlistURL = "https://iptv-org.github.io/iptv/countries/ar.m3u";
+
 const channelList = document.getElementById("channelList");
 const video = document.getElementById("videoPlayer");
 const loading = document.getElementById("loading");
@@ -24,18 +25,13 @@ function parseM3U(data) {
   for (let i = 0; i < lines.length; i++) {
     if (lines[i].startsWith("#EXTINF")) {
 
-      const extinf = lines[i];
+      const nameMatch = lines[i].match(/,(.*)$/);
       const url = lines[i + 1];
 
       if (!url || !url.startsWith("http")) continue;
 
-      const countryMatch = extinf.match(/tvg-country="([^"]+)"/);
-      const nameMatch = extinf.match(/,(.*)$/);
-
-      if (!countryMatch || countryMatch[1] !== "AR") continue;
-
       channels.push({
-        name: nameMatch ? nameMatch[1].trim() : "Sin nombre",
+        name: nameMatch ? nameMatch[1].trim() : "Canal",
         url: url.trim()
       });
     }
@@ -44,9 +40,11 @@ function parseM3U(data) {
 
 function renderChannels() {
   if (channels.length === 0) {
-    channelList.innerHTML = "<p>No se encontraron canales AR.</p>";
+    channelList.innerHTML = "<p>No se encontraron canales.</p>";
     return;
   }
+
+  channelList.innerHTML = "";
 
   channels.forEach((channel, index) => {
     const button = document.createElement("button");
